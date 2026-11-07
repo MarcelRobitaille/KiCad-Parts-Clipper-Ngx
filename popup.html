@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KiCad Parts Clipper</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #181c27;
+      --border:    #1e2a4a;
+      --accent:    #4f7fff;
+      --accent2:   #ff6d00;
+      --warn:      #f59e0b;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --error:     #f87171;
+      --radius:    6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 340px;
+      min-height: 200px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo svg { width: 16px; height: 16px; fill: #0f1117; }
+    .header-text h1 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+    }
+    .header-text p {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    /* ── Status badge ── */
+    .vendor-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 99px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin: 12px 16px 6px;
+    }
+    .vendor-badge.digikey  { background: #0f1a35; color: #4f7fff; border: 1px solid #1e3060; }
+    .vendor-badge.mouser   { background: #1a1020; color: #c084fc; border: 1px solid #3a1850; }
+    .vendor-badge.lcsc     { background: #1a1200; color: #fbbf24; border: 1px solid #3a2800; }
+    .vendor-badge.unknown  { background: #1a1a1a; color: var(--muted);   border: 1px solid var(--border); }
+    .vendor-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* ── Fields preview ── */
+    .fields {
+      margin: 4px 16px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .field-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+    .field-row:last-child { border-bottom: none; }
+    .field-name {
+      padding: 5px 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .field-value {
+      padding: 5px 8px;
+      font-size: 11px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .field-value.empty { color: var(--muted); font-style: italic; }
+    .field-value.highlight { color: var(--accent); font-weight: 600; }
+
+    /* ── Copy button ── */
+    .btn-copy {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: calc(100% - 32px);
+      margin: 0 16px 14px;
+      padding: 10px;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-copy:hover { background: #7a9fff; transform: translateY(-1px); }
+    .btn-copy:active { transform: translateY(0); }
+    .btn-copy:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
+    .btn-copy.success { background: #22c55e; }
+    .btn-copy.error   { background: var(--error); color: #fff; }
+    .btn-copy svg { width: 14px; height: 14px; }
+
+    /* ── Status message ── */
+    .status {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      padding: 0 16px 12px;
+      min-height: 18px;
+    }
+    .status.ok    { color: var(--accent); }
+    .status.warn  { color: var(--warn); }
+    .status.error { color: var(--error); }
+
+    /* ── Not-on-product-page message ── */
+    .not-supported {
+      padding: 24px 16px;
+      text-align: center;
+    }
+    .not-supported .icon { font-size: 32px; margin-bottom: 10px; }
+    .not-supported p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .not-supported p strong { color: var(--text); }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <img src="icons/icon48.png" width="32" height="32" style="flex-shrink:0;border-radius:6px;" alt="KiCad"/>
+  <div class="header-text">
+    <h1>KICAD PARTS CLIPPER</h1>
+    <p>Copy component fields to KiCad clipboard</p>
+  </div>
+</div>
+
+<div id="main-content">
+  <!-- Filled by popup.js -->
+  <div class="not-supported">
+    <div class="icon">🔍</div>
+    <p>Navigate to a <strong>product page</strong> on<br>Digikey, Mouser, or LCSC<br>to extract component data.</p>
+  </div>
+</div>
+
+
+<script src="content-scripts/browser-polyfill.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>
