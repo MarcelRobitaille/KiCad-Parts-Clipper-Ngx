@@ -41,11 +41,12 @@
     return null;
   }
 
-  function makeAnchor(el, after) {
+  // placement: "before" | "after" | "inside"
+  function makeAnchor(el, placement) {
     if (!el) return null;
     var table = closestTable(el);
-    if (table) return { el: table, after: false };
-    return { el: el, after: !!after };
+    if (table) return { el: table, placement: "before" };
+    return { el: el, placement: placement || "before" };
   }
 
   var HEADING_RE = /^(?:product\s+)?(?:attributes?|specifications?|technical\s+(?:specifications?|data)|produktattribute|eigenschaften|technische\s+daten|spezifikationen|caract[ée]ristiques(?:\s+techniques)?)$/i;
@@ -57,7 +58,7 @@
     );
     for (var i = 0; i < nodes.length; i++) {
       if (visible(nodes[i]) && HEADING_RE.test(textOf(nodes[i]))) {
-        return makeAnchor(nodes[i], true);
+        return makeAnchor(nodes[i], "after");
       }
     }
     return null;
@@ -76,8 +77,26 @@
         var cells = rows[r].querySelectorAll("td, th");
         if (cells.length >= 2 && textOf(cells[0]) && textOf(cells[1])) labelish++;
       }
-      if (labelish >= 3) return { el: tables[t], after: false };
+      if (labelish >= 3) return { el: tables[t], placement: "before" };
     }
+    return null;
+  }
+
+  // Mouser shows the manufacturer part number in the product card header at
+  // the very top of the page, above the Mouser/Mfr. number rows. Put the
+  // button there instead of down at the specifications table.
+  function findMouserHeaderAnchor() {
+    var header = document.querySelector(
+      ".pdp-product-card-header, #pdpProdInfo > .card-header, " +
+      "#pdpProdInfo > .panel-heading, #pdpProdInfo .pdp-product-card-header"
+    );
+    if (header) return { el: header, placement: "inside" };
+
+    var title = document.querySelector('[data-testid="ProductInfoHeader"]')
+      || document.querySelector("#pdpProdInfo h1")
+      || document.querySelector("h1");
+    if (title) return { el: title, placement: "after" };
+
     return null;
   }
 
@@ -85,13 +104,16 @@
     var i, cells, table;
 
     if (host.vendor === "mouser") {
+      var mouserHeader = findMouserHeaderAnchor();
+      if (mouserHeader) return mouserHeader;
+
       var specRow = document.querySelector('[id*="pdp_specs_SpecList"]');
       if (specRow) {
         table = closestTable(specRow);
-        if (table) return { el: table, after: false };
+        if (table) return { el: table, placement: "before" };
       }
       var pdpSpecs = document.getElementById("pdp-specs");
-      if (pdpSpecs) return makeAnchor(pdpSpecs, false);
+      if (pdpSpecs) return makeAnchor(pdpSpecs, "before");
     }
 
     if (host.vendor === "lcsc") {
@@ -99,7 +121,7 @@
       for (i = 0; i < cells.length; i++) {
         if (/^(?:mfr\.?\s*part\s*#|lcsc\s*part\s*#|manufacturer)$/i.test(textOf(cells[i]))) {
           table = closestTable(cells[i]);
-          if (table) return { el: table, after: false };
+          if (table) return { el: table, placement: "before" };
         }
       }
     }
@@ -111,7 +133,7 @@
       cells = document.querySelectorAll("td, th, div, span");
       for (i = 0; i < cells.length; i++) {
         if (visible(cells[i]) && /^(?:product attributes|attributes|specifications?|technical specifications?|produktattribute|eigenschaften|technische daten)$/i.test(textOf(cells[i]))) {
-          return makeAnchor(cells[i], true);
+          return makeAnchor(cells[i], "after");
         }
       }
     }
@@ -259,7 +281,24 @@
       margin: "10px 0",
     });
 
-    if (anchor.after) {
+    var placement = anchor.placement || "before";
+
+    if (placement === "inside") {
+      // Lay the site's header out as a row so the part number and the button
+      // sit side by side, with the button pushed to the right.
+      setStyles(anchor.el, {
+        display: "flex",
+        "align-items": "center",
+        "justify-content": "space-between",
+        "flex-wrap": "wrap",
+        gap: "12px",
+      });
+      setStyles(wrapper, { margin: "0", "margin-left": "auto" });
+      anchor.el.appendChild(wrapper);
+      return;
+    }
+
+    if (placement === "after") {
       anchor.el.parentNode.insertBefore(wrapper, anchor.el.nextSibling);
     } else {
       anchor.el.parentNode.insertBefore(wrapper, anchor.el);
