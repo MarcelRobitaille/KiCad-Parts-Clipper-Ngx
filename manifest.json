@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "KiCad Parts Clipper",
+  "name": "KiCad Parts Clipper Ngx",
   "version": "1.0.1",
   "description": "Copy component data from Digikey, Mouser, or LCSC directly into KiCad symbol clipboard format.",
   "permissions": [
@@ -78,7 +78,7 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "kicad-parts-clipper@novasmar.com",
+      "id": "kicad-parts-clipper-ngx@marcelrobitaille.me",
       "strict_min_version": "140.0",
       "data_collection_permissions": {
         "required": [
