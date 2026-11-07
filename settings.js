@@ -212,4 +212,8 @@
     buildTSV: buildTSV,
     sanitizeName: sanitizeName,
   };
-})(typeof window !== "undefined" ? window : this);
+})(
+  typeof globalThis !== "undefined"
+    ? globalThis
+    : (typeof window !== "undefined" ? window : this)
+);

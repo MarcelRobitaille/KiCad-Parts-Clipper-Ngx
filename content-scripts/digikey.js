@@ -320,15 +320,18 @@
     return data;
   }
 
+  function isProductPage() {
+    // The product table contains a label we can match in English or German.
+    var cells = document.querySelectorAll("td");
+    for (var i = 0; i < cells.length; i++) {
+      if (labelMatches(cells[i].textContent, LABELS.manufacturerProductNumber)) return true;
+    }
+    return false;
+  }
+
   function waitForProduct(callback) {
     // Wait for the product table to appear
-    var check = function() {
-      var cells = document.querySelectorAll("td");
-      for (var i = 0; i < cells.length; i++) {
-        if (labelMatches(cells[i].textContent, LABELS.manufacturerProductNumber)) return true;
-      }
-      return false;
-    };
+    var check = isProductPage;
     if (check()) { setTimeout(callback, 300); return; }
     var observer = new MutationObserver(function() {
       if (check()) { observer.disconnect(); setTimeout(callback, 400); }
@@ -356,5 +359,17 @@
     cachedTsv  = buildKiCadTSV(cachedData);
     console.log("[KiCad Clipper] Pre-scraped and ready.");
   });
+
+  // Shared API for the on-page "Copy to KiCad" button.
+  globalThis.__kicadClipperHost = {
+    vendor: "digikey",
+    isProductPage: isProductPage,
+    waitForProduct: waitForProduct,
+    getData: function () {
+      cachedData = scrape();
+      cachedTsv  = buildKiCadTSV(cachedData);
+      return cachedData;
+    },
+  };
 
 })();

@@ -183,14 +183,16 @@
     return data;
   }
 
+  function isProductPage() {
+    var cells = document.querySelectorAll("td");
+    for (var i = 0; i < cells.length; i++) {
+      if (cells[i].textContent.trim() === "Mfr. Part #" && cells[i].children.length === 0) return true;
+    }
+    return false;
+  }
+
   function waitForProduct(callback) {
-    var check = function() {
-      var cells = document.querySelectorAll("td");
-      for (var i = 0; i < cells.length; i++) {
-        if (cells[i].textContent.trim() === "Mfr. Part #" && cells[i].children.length === 0) return true;
-      }
-      return false;
-    };
+    var check = isProductPage;
     if (check()) { setTimeout(callback, 300); return; }
     var observer = new MutationObserver(function() {
       if (check()) { observer.disconnect(); setTimeout(callback, 400); }
@@ -218,5 +220,17 @@
     cachedTsv  = buildKiCadTSV(cachedData);
     console.log("[KiCad Clipper] Pre-scraped and ready.");
   });
+
+  // Shared API for the on-page "Copy to KiCad" button.
+  globalThis.__kicadClipperHost = {
+    vendor: "lcsc",
+    isProductPage: isProductPage,
+    waitForProduct: waitForProduct,
+    getData: function () {
+      cachedData = scrape();
+      cachedTsv  = buildKiCadTSV(cachedData);
+      return cachedData;
+    },
+  };
 
 })();

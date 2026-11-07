@@ -43,7 +43,9 @@
       ],
       "js": [
         "content-scripts/browser-polyfill.js",
-        "content-scripts/digikey.js"
+        "settings.js",
+        "content-scripts/digikey.js",
+        "content-scripts/copy-button.js"
       ],
       "run_at": "document_idle"
     },
@@ -55,7 +57,9 @@
       ],
       "js": [
         "content-scripts/browser-polyfill.js",
-        "content-scripts/mouser.js"
+        "settings.js",
+        "content-scripts/mouser.js",
+        "content-scripts/copy-button.js"
       ],
       "run_at": "document_idle"
     },
@@ -65,7 +69,9 @@
       ],
       "js": [
         "content-scripts/browser-polyfill.js",
-        "content-scripts/lcsc.js"
+        "settings.js",
+        "content-scripts/lcsc.js",
+        "content-scripts/copy-button.js"
       ],
       "run_at": "document_idle"
     }

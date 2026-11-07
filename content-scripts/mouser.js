@@ -341,12 +341,14 @@
     return data;
   }
 
+  function isProductPage() {
+    var el = document.getElementById("spnManufacturerPartNumber")
+      || document.getElementById("spnDescription");
+    return (el && el.textContent.trim().length > 0) || !!getJsonLdProduct();
+  }
+
   function waitForProduct(callback) {
-    var check = function() {
-      var el = document.getElementById("spnManufacturerPartNumber")
-        || document.getElementById("spnDescription");
-      return (el && el.textContent.trim().length > 0) || !!getJsonLdProduct();
-    };
+    var check = isProductPage;
     if (check()) { setTimeout(callback, 500); return; }
     var observer = new MutationObserver(function() {
       if (check()) { observer.disconnect(); setTimeout(callback, 600); }
@@ -374,5 +376,17 @@
     cachedTsv  = buildKiCadTSV(cachedData);
     console.log("[KiCad Clipper] Pre-scraped and ready.");
   });
+
+  // Shared API for the on-page "Copy to KiCad" button.
+  globalThis.__kicadClipperHost = {
+    vendor: "mouser",
+    isProductPage: isProductPage,
+    waitForProduct: waitForProduct,
+    getData: function () {
+      cachedData = scrape();
+      cachedTsv  = buildKiCadTSV(cachedData);
+      return cachedData;
+    },
+  };
 
 })();
