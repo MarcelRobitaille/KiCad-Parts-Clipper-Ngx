@@ -28,19 +28,7 @@
     return { digikey: "Digikey", mouser: "Mouser", lcsc: "LCSC" }[v] || "Unknown";
   }
 
-  var FIELD_DISPLAY = [
-    ["Value",          "value",            true ],
-    ["Part#",          "partNumber",       false],
-    ["eVendor Part#",  "vendorPartNumber", false],
-    ["eVendor Price",  "vendorPrice",      false],
-    ["Manufacturer",   "manufacturer",     false],
-    ["Description",    "description",      false],
-    ["Datasheet",      "datasheet",        false],
-    ["MSRP",           "msrp",             false],
-    ["Quantity",       "quantity",         false],
-  ];
-
-  function renderPreview(data, vendor) {
+  function renderPreview(data, vendor, settings) {
     var main = document.getElementById("main-content");
 
     var badge = document.createElement("div");
@@ -50,24 +38,26 @@
     var fields = document.createElement("div");
     fields.className = "fields";
 
-    for (var i = 0; i < FIELD_DISPLAY.length; i++) {
-      var label = FIELD_DISPLAY[i][0];
-      var key   = FIELD_DISPLAY[i][1];
-      var hl    = FIELD_DISPLAY[i][2];
-      var val   = data[key] || "";
+    var configured = KiCadClipperSettings.normalizeSettings(settings);
+    for (var i = 0; i < KiCadClipperSettings.FIELDS.length; i++) {
+      var field = KiCadClipperSettings.FIELDS[i];
+      var config = configured.fields[field.key];
+      if (!config.enabled) continue;
+
+      var val = field.dataKey ? data[field.dataKey] || "" : "";
 
       var row = document.createElement("div");
       row.className = "field-row";
 
       var nameEl = document.createElement("div");
       nameEl.className = "field-name";
-      nameEl.textContent = label;
+      nameEl.textContent = config.name;
 
       var valEl = document.createElement("div");
-      valEl.className = "field-value" + (val ? (hl ? " highlight" : "") : " empty");
+      valEl.className = "field-value" + (val ? (field.visible ? " highlight" : "") : " empty");
       valEl.title = val || "-";
 
-      if (key === "datasheet" && val) {
+      if (field.dataKey === "datasheet" && val) {
         try { valEl.textContent = new URL(val).hostname + "/..."; }
         catch (e) { valEl.textContent = val; }
       } else {
@@ -112,8 +102,12 @@
   }
 
   function init() {
-    browser.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
-      var tab = tabs[0];
+    Promise.all([
+      browser.tabs.query({ active: true, currentWindow: true }),
+      KiCadClipperSettings.loadSettings(),
+    ]).then(function (results) {
+      var tab = results[0][0];
+      var settings = results[1];
       if (!tab) return;
 
       var vendor = detectVendor(tab.url);
@@ -128,10 +122,10 @@
           return;
         }
         var data = payload.data;
-        var tsv  = payload.tsv;
-        var ui   = renderPreview(data, vendor);
+        var ui   = renderPreview(data, vendor, settings);
 
         ui.btn.addEventListener("click", function () {
+          var tsv = KiCadClipperSettings.buildTSV(data, settings);
           navigator.clipboard.writeText(tsv).then(function () {
             ui.btn.classList.add("success");
             ui.btn.innerHTML =
@@ -160,6 +154,13 @@
           '<small>' + (err && err.message ? err.message : "") + '</small></p></div>'
         );
       });
+    });
+  }
+
+  var settingsButton = document.getElementById("btn-settings");
+  if (settingsButton) {
+    settingsButton.addEventListener("click", function () {
+      browser.runtime.openOptionsPage();
     });
   }
 

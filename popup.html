@@ -59,6 +59,22 @@
       color: var(--muted);
       margin-top: 1px;
     }
+    .btn-settings {
+      margin-left: auto;
+      width: 26px; height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-settings:hover { color: var(--accent); border-color: var(--accent); }
 
     /* ── Status badge ── */
     .vendor-badge {
@@ -92,7 +108,7 @@
     }
     .field-row {
       display: grid;
-      grid-template-columns: 110px 1fr;
+      grid-template-columns: minmax(110px, 45%) 1fr;
       border-bottom: 1px solid var(--border);
     }
     .field-row:last-child { border-bottom: none; }
@@ -186,6 +202,7 @@
     <h1>KICAD PARTS CLIPPER</h1>
     <p>Copy component fields to KiCad clipboard</p>
   </div>
+  <button id="btn-settings" class="btn-settings" type="button" title="Field settings" aria-label="Field settings">&#9881;</button>
 </div>
 
 <div id="main-content">
@@ -198,6 +215,7 @@
 
 
 <script src="content-scripts/browser-polyfill.js"></script>
+<script src="settings.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>

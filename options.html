@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KiCad Parts Clipper - Field Settings</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #181c27;
+      --border:    #1e2a4a;
+      --accent:    #4f7fff;
+      --accent2:   #ff6d00;
+      --warn:      #f59e0b;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --error:     #f87171;
+      --ok:        #22c55e;
+      --radius:    6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+      padding: 32px 20px 64px;
+    }
+
+    .page { max-width: 760px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .header img { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; }
+    .header h1 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+    }
+    .header p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* ── Intro ── */
+    .intro {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    /* ── Field list ── */
+    .grid-head,
+    .field-row {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) 56px minmax(180px, 250px);
+      gap: 12px;
+      align-items: center;
+    }
+    .grid-head {
+      padding: 8px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .field-list {
+      border: 1px solid var(--border);
+      border-radius: 0 0 var(--radius) var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .field-row {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      transition: opacity 0.15s ease;
+    }
+    .field-row:last-child { border-bottom: none; }
+    .field-row.is-disabled .field-info,
+    .field-row.is-disabled .attr-input { opacity: 0.45; }
+
+    .field-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .field-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    .toggle-cell { display: flex; justify-content: center; }
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .attr-input {
+      width: 100%;
+      padding: 6px 8px;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .attr-input:focus { border-color: var(--accent); }
+    .attr-input::placeholder { color: var(--muted); }
+
+    /* ── Actions ── */
+    .actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .btn {
+      padding: 8px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+    .btn.primary:hover { background: #7a9fff; border-color: #7a9fff; color: #ffffff; }
+
+    .status { font-size: 11px; color: var(--muted); }
+    .status.ok    { color: var(--ok); }
+    .status.warn  { color: var(--warn); }
+    .status.error { color: var(--error); }
+
+    .note {
+      margin-top: 22px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+    .note code {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text);
+      background: var(--bg);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <img src="icons/icon48.png" alt="KiCad Parts Clipper" />
+      <div>
+        <h1>FIELD SETTINGS</h1>
+        <p>Choose which fields are copied and rename their KiCad attributes</p>
+      </div>
+    </header>
+
+    <p class="intro">
+      Disabled fields are omitted from the clipboard data. The attribute name is written
+      to the first column of the KiCad symbol fields clipboard format. Fields are copied
+      in the order shown below.
+    </p>
+
+    <div class="grid-head">
+      <span>Field</span>
+      <span style="text-align:center;">Copy</span>
+      <span>KiCad attribute name</span>
+    </div>
+    <div class="field-list" id="fields"></div>
+
+    <div class="actions">
+      <button type="button" class="btn primary" id="btn-save">SAVE CHANGES</button>
+      <button type="button" class="btn" id="btn-reset">RESET TO DEFAULTS</button>
+      <span class="status" id="status"></span>
+    </div>
+
+    <p class="note">
+      Tip: if you use custom field names in KiCad, make the attribute names here match
+      them exactly (for example <code>MPN</code> or <code>Supplier</code>).
+    </p>
+  </div>
+
+  <script src="content-scripts/browser-polyfill.js"></script>
+  <script src="settings.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
