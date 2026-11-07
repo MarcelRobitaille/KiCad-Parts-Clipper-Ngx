@@ -4,8 +4,8 @@
   "use strict";
 
   var VENDOR_DOMAINS = {
-    digikey: ["digikey.com", "digikey.com.br"],
-    mouser:  ["mouser.com",  "mouser.com.br"],
+    digikey: ["digikey.com", "digikey.com.br", "digikey.de"],
+    mouser:  ["mouser.com",  "mouser.com.br",  "mouser.de"],
     lcsc:    ["lcsc.com"],
   };
 

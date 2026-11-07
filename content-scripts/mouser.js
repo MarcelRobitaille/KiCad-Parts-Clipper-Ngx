@@ -3,6 +3,46 @@
 (function () {
   "use strict";
 
+  // Parse a localized integer quantity, e.g. "1,000" or "1.000".
+  function parseQty(text) {
+    var m = String(text || "").replace(/\s|\u00a0/g, "").match(/[0-9][0-9.,]*/);
+    if (!m) return NaN;
+    return parseInt(m[0].replace(/[.,]/g, ""), 10);
+  }
+
+  // Parse a localized price, e.g. "$1,234.56", "1.234,56 \u20ac" or "R$ 0,10".
+  function parseMoney(text) {
+    var s = String(text || "").replace(/\s|\u00a0/g, "");
+    var m = s.match(/[0-9][0-9.,]*/);
+    if (!m) return null;
+    var n = m[0];
+    var host = typeof location !== "undefined" ? location.hostname : "";
+    var commaDecimal = /(^|\.)de$/.test(host) || /(^|\.)com\.br$/.test(host)
+      || /\u20ac/.test(s) || /R\$/.test(s) || /,\d{1,2}$/.test(n);
+    if (commaDecimal) {
+      n = n.replace(/\./g, "").replace(",", ".");
+    } else {
+      var lastComma = n.lastIndexOf(",");
+      var lastDot = n.lastIndexOf(".");
+      if (lastComma !== -1 && lastDot !== -1) {
+        n = lastComma > lastDot ? n.replace(/\./g, "").replace(",", ".") : n.replace(/,/g, "");
+      } else if (lastComma !== -1) {
+        var decimals = n.length - lastComma - 1;
+        n = decimals === 3 ? n.replace(/,/g, "") : n.replace(",", ".");
+      }
+    }
+    var value = parseFloat(n);
+    return isNaN(value) ? null : value;
+  }
+
+  // Normalize European shop values: "4,7 kOhm" -> "4.7 kOhm", "4,7 \u00b5F" -> "4.7 uF".
+  function normalizeNumberText(raw) {
+    return String(raw || "")
+      .replace(/[\u00b5\u03bc]/g, "u")
+      .replace(/[\u03a9\u2126]/g, "Ohm")
+      .replace(/(\d),(\d)/g, "$1.$2");
+  }
+
   function buildKiCadTSV(data) {
     var v = function(n, val) { return n + "\t" + val + "\t1\t0\tLeft\tCenter\t0\t0"; };
     var h = function(n, val) { return n + "\t" + val + "\t0\t0\tCenter\tCenter\t0\t0"; };
@@ -50,16 +90,16 @@
         // Data row: exactly 2 td + 1 th
         if (tds.length === 2 && ths.length === 1) {
           // th = qty (may be a link or plain text)
-          var qtyText = ths[0].textContent.trim().replace(/,/g, "");
-          var qty = parseInt(qtyText, 10);
+          var qty = parseQty(ths[0].textContent);
           if (isNaN(qty) || qty <= 0) continue;
 
           // tds[0] = unit price, tds[1] = ext price
-          var unitText = tds[0].textContent.trim();
-          var m = unitText.match(/\$\s*([\d.]+)/);
-          if (!m) continue;
+          var priceText = tds[0].textContent;
+          if (!/\$|\u20ac/.test(priceText)) continue;
+          var price = parseMoney(priceText);
+          if (price === null) continue;
 
-          found.push({ qty: qty, price: parseFloat(m[1]) });
+          found.push({ qty: qty, price: price });
         }
       }
 
@@ -129,7 +169,7 @@
 
     function formatValue(raw, type) {
       if (!raw) return "";
-      raw = raw.trim().replace(/\u03a9/g, "Ohm");
+      raw = normalizeNumberText(raw).trim();
       var m = raw.match(/^([\d.]+)\s*([a-zA-Z]+)/);
       if (!m) return raw;
       var num = parseFloat(m[1]);
@@ -157,9 +197,9 @@
       return raw;
     }
 
-    var resistance  = findSpec(/^Resistance:/i);
-    var capacitance = findSpec(/^Capacitance:/i);
-    var inductance  = findSpec(/^Inductance:/i);
+    var resistance  = findSpec(/^(?:Resistance|Widerstand|Widerstandswert):?$/i);
+    var capacitance = findSpec(/^(?:Capacitance|Kapazit(?:\u00e4|ae)t):?$/i);
+    var inductance  = findSpec(/^(?:Inductance|Induktivit(?:\u00e4|ae)t):?$/i);
 
     if (resistance) {
       data.value = formatValue(resistance, "R");
