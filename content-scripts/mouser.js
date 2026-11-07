@@ -66,6 +66,79 @@
     return el ? el.textContent.trim() : "";
   }
 
+  function getMetaContent(selector) {
+    var el = document.querySelector(selector);
+    return el && el.content ? String(el.content).trim() : "";
+  }
+
+  function jsonLdText(value) {
+    if (value == null) return "";
+    if (typeof value === "string") return value.trim();
+    if (Array.isArray(value)) {
+      for (var i = 0; i < value.length; i++) {
+        var nested = jsonLdText(value[i]);
+        if (nested) return nested;
+      }
+      return "";
+    }
+    if (typeof value === "object") return jsonLdText(value.name);
+    return String(value).trim();
+  }
+
+  // Mouser embeds a JSON-LD Product block where `sku` is the Mouser part
+  // number and `mpn` is the manufacturer part number. It is far more stable
+  // than the visible page element IDs, which change between storefront
+  // versions and locales.
+  function getJsonLdProduct() {
+    var found = [];
+
+    function collect(node) {
+      if (!node) return;
+      if (Array.isArray(node)) {
+        for (var i = 0; i < node.length; i++) collect(node[i]);
+        return;
+      }
+      if (typeof node !== "object") return;
+
+      var type = node["@type"];
+      if (type === "Product" || (Array.isArray(type) && type.indexOf("Product") !== -1)) {
+        found.push(node);
+      }
+      if (node["@graph"]) collect(node["@graph"]);
+    }
+
+    var scripts = document.querySelectorAll('script[type="application/ld+json"]');
+    for (var i = 0; i < scripts.length; i++) {
+      var parsed;
+      try {
+        parsed = JSON.parse(scripts[i].textContent);
+      } catch (e) {
+        continue;
+      }
+      collect(parsed);
+    }
+
+    return found[0] || null;
+  }
+
+  // Mouser product URLs come in two forms:
+  //   /ProductDetail/595-NE555P                 -> Mouser part number
+  //   /ProductDetail/Texas-Instruments/NE555P   -> manufacturer part number
+  // Only the one-segment form with the numeric Mouser prefix is reliable.
+  function mouserPartNumberFromUrl() {
+    var path = typeof location !== "undefined" && location.pathname ? location.pathname : "";
+    var parts = path.split("/").filter(function (part) { return !!part; });
+    var idx = parts.indexOf("ProductDetail");
+    if (idx === -1 || parts[idx + 2]) return "";
+    var candidate = parts[idx + 1] || "";
+    if (!/^\d{2,4}-/.test(candidate)) return "";
+    try {
+      return decodeURIComponent(candidate);
+    } catch (e) {
+      return candidate;
+    }
+  }
+
   // Parse all price breaks from the page
   // Returns array of {qty, price} sorted by qty ascending
   function parsePriceBreaks() {
@@ -143,16 +216,40 @@
 
     console.log("[KiCad Clipper] Scraping Mouser...");
 
-    data.vendorPartNumber = getText("divMouserPartNum")
-      || getText("spnMouserPartNumFormattedForProdInfo");
+    var product = getJsonLdProduct();
+    var jsonLdSku = product ? jsonLdText(product.sku) : "";
+    var jsonLdMpn = product ? jsonLdText(product.mpn) : "";
+    var jsonLdBrand = product ? jsonLdText(product.brand) : "";
+    var jsonLdDescription = product ? jsonLdText(product.description) : "";
 
-    data.partNumber = getText("spnManufacturerPartNumber")
+    // Some listings put the manufacturer part number in `sku` as well.
+    // In that case keep it out of the distributor field.
+    if (jsonLdSku && jsonLdMpn && jsonLdSku === jsonLdMpn) jsonLdSku = "";
+
+    // eVendor Part# = distributor's own part number (the Mouser part number).
+    data.vendorPartNumber = jsonLdSku
+      || getText("divMouserPartNum")
+      || getText("spnMouserPartNumFormattedForProdInfo")
+      || getText("spnMouserPartNum")
+      || getMetaContent('meta[itemprop="sku"]')
+      || getMetaContent('meta[property="product:sku"]')
+      || mouserPartNumberFromUrl();
+
+    // Part# = manufacturer part number.
+    data.partNumber = jsonLdMpn
+      || getText("spnManufacturerPartNumber")
+      || getText("spnManufacturerPartNum")
+      || getMetaContent('meta[itemprop="mpn"]')
+      || getMetaContent('meta[property="product:mpn"]')
       || (document.querySelector("h1") ? document.querySelector("h1").textContent.trim() : "");
 
-    data.manufacturer = getText("lnkManufacturerName");
+    data.manufacturer = getText("lnkManufacturerName")
+      || getText("spnManufacturerName")
+      || jsonLdBrand;
 
     data.description = getText("spnDescription")
-      || getText("detail-feature-desc");
+      || getText("detail-feature-desc")
+      || jsonLdDescription;
 
     // Smart Value: extract R/C/L from specs table
     function findSpec(labelPattern) {
@@ -248,7 +345,7 @@
     var check = function() {
       var el = document.getElementById("spnManufacturerPartNumber")
         || document.getElementById("spnDescription");
-      return el && el.textContent.trim().length > 0;
+      return (el && el.textContent.trim().length > 0) || !!getJsonLdProduct();
     };
     if (check()) { setTimeout(callback, 500); return; }
     var observer = new MutationObserver(function() {

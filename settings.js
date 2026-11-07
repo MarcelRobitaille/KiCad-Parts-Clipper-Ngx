@@ -65,7 +65,7 @@
     },
     {
       key: "vendor",
-      label: "eVendor",
+      label: "Distributor",
       defaultName: "eVendor",
       dataKey: "vendor",
       visible: false,
@@ -74,12 +74,12 @@
     },
     {
       key: "vendorPartNumber",
-      label: "eVendor Part#",
+      label: "Distributor Part#",
       defaultName: "eVendor Part#",
       dataKey: "vendorPartNumber",
       visible: false,
       enabledByDefault: true,
-      hint: "Distributor part number",
+      hint: "Distributor's own part number (for example the Mouser part number)",
     },
     {
       key: "vendorPrice",
@@ -92,12 +92,12 @@
     },
     {
       key: "partNumber",
-      label: "Part#",
+      label: "Manufacturer Part#",
       defaultName: "Part#",
       dataKey: "partNumber",
       visible: false,
       enabledByDefault: true,
-      hint: "Manufacturer part number",
+      hint: "Manufacturer part number (MPN)",
     },
     {
       key: "msrp",
