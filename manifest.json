@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "KiCad Parts Clipper Ngx",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Copy component data from Digikey, Mouser, or LCSC directly into KiCad symbol clipboard format.",
   "permissions": [
     "activeTab",
