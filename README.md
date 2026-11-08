@@ -15,6 +15,10 @@ This fork keeps the original workflow and adds German storefront support, config
 - **Popup preview:** shows the extracted values and lets you copy from the toolbar popup.
 - **No data collection:** everything runs locally in the browser.
 
+## Privacy
+
+The extension does not collect or transmit personal data, and its settings stay in local extension storage. See [PRIVACY.md](PRIVACY.md) for the full policy.
+
 ## Usage
 
 1. Open a product page on a supported site.
