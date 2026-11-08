@@ -100,6 +100,28 @@
     return null;
   }
 
+  // DigiKey puts the manufacturer part number in an <h1> inside the header
+  // row of the product-info table, above the DigiKey/Mfr. number rows.
+  function findDigikeyHeaderAnchor() {
+    var header = document.querySelector(
+      '[data-testid="product-info"] [class*="mfrProdNumHeader"]'
+    );
+    if (header) return { el: header, placement: "inside" };
+
+    var title = document.querySelector(
+      '[data-testid="product-info"] h1, h1[class*="manuProductNumber"]'
+    );
+    if (title) return { el: title, placement: "after" };
+
+    var th = document.querySelector('[data-testid="product-info"] thead th');
+    if (th) return { el: th, placement: "inside" };
+
+    var fallbackTitle = document.querySelector("h1");
+    if (fallbackTitle) return { el: fallbackTitle, placement: "after" };
+
+    return null;
+  }
+
   function findAnchor() {
     var i, cells, table;
 
@@ -114,6 +136,11 @@
       }
       var pdpSpecs = document.getElementById("pdp-specs");
       if (pdpSpecs) return makeAnchor(pdpSpecs, "before");
+    }
+
+    if (host.vendor === "digikey") {
+      var digikeyHeader = findDigikeyHeaderAnchor();
+      if (digikeyHeader) return digikeyHeader;
     }
 
     if (host.vendor === "lcsc") {
@@ -289,7 +316,7 @@
       setStyles(anchor.el, {
         display: "flex",
         "align-items": "center",
-        "justify-content": "space-between",
+        "justify-content": "flex-start",
         "flex-wrap": "wrap",
         gap: "12px",
       });
