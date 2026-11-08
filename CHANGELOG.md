@@ -25,7 +25,7 @@ version.
 ### Changed
 
 - Renamed the add-on to **KiCad Parts Clipper Ngx** and gave it its own
-  extension ID (`kicad-parts-clipper-ngx@marcelrobitaille.me`) so it can be
+  extension ID (`kicad_parts_clipper_ngx@marcelrobitaille.me`) so it can be
   published and installed alongside the original.
 - Updated the popup and options pages with the new name.
 

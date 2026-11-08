@@ -2,7 +2,7 @@
 
 A fork of the original **KiCad Parts Clipper** extension (`kicad-parts-clipper@novasmar.com`).
 
-This fork keeps the original workflow and adds German storefront support, configurable KiCad fields, distributor part numbers, and an on-page copy button. It uses its own extension ID (`kicad-parts-clipper-ngx@marcelrobitaille.me`) so it can be published and installed alongside the original.
+This fork keeps the original workflow and adds German storefront support, configurable KiCad fields, distributor part numbers, and an on-page copy button. It uses its own extension ID (`kicad_parts_clipper_ngx@marcelrobitaille.me`) so it can be published and installed alongside the original.
 
 ## Features
 
@@ -31,12 +31,14 @@ The built XPI is unsigned.
 - **Temporary (development):** open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select `manifest.json` or the built XPI.
 - **Permanent:** publish/sign the add-on through [addons.mozilla.org](https://addons.mozilla.org/) or use a Firefox build with signature enforcement disabled.
 
-## Build
+## Build for Firefox
 
 ```sh
-./build.sh
+./build-firefox.sh
 ```
 
-This writes `./kicad_parts_clipper_<version>.xpi`.
+This writes `./kicad_parts_clipper_ngx_<version>.xpi`.
+
+The version is read from `manifest.json`.
 
 The version is read from `manifest.json`.

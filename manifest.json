@@ -78,7 +78,7 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "kicad-parts-clipper-ngx@marcelrobitaille.me",
+      "id": "kicad_parts_clipper_ngx@marcelrobitaille.me",
       "strict_min_version": "140.0",
       "data_collection_permissions": {
         "required": [
