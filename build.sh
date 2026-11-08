@@ -5,8 +5,8 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-OUT="${1:-$HOME/Downloads/kicad_parts_clipper.xpi}"
 VERSION="$(python3 -c 'import json; print(json.load(open("manifest.json"))["version"])')"
+OUT="./kicad_parts_clipper_v${VERSION//./_}.xpi"
 
 rm -f "$OUT"
 zip -r -X -q "$OUT" \

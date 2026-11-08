@@ -37,10 +37,6 @@ The built XPI is unsigned.
 ./build.sh
 ```
 
-This writes `~/Downloads/kicad_parts_clipper.xpi`. To choose another output path:
-
-```sh
-./build.sh /path/to/kicad_parts_clipper_ngx.xpi
-```
+This writes `./kicad_parts_clipper_<version>.xpi`.
 
 The version is read from `manifest.json`.
