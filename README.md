@@ -15,6 +15,18 @@ This fork keeps the original workflow and adds German storefront support, config
 - **Popup preview:** shows the extracted values and lets you copy from the toolbar popup.
 - **No data collection:** everything runs locally in the browser.
 
+## Screenshots
+
+<img src="screenshots/demo.gif" alt="Demo of copying a DigiKey component into KiCad" width="640">
+
+Popup (if you click the AddOn on the product page instead of the inlined "Copy to KiCad" button):
+
+<img src="screenshots/kicad_parts_clipper_ngx_screenshot_1280x800.png" alt="Popup showing extracted component fields" width="640">
+
+Field settings page:
+
+<img src="screenshots/kicad_parts_clipper_ngx_settings_1280x800.png" alt="Field settings page" width="640">
+
 ## Privacy
 
 The extension does not collect or transmit personal data, and its settings stay in local extension storage. See [PRIVACY.md](PRIVACY.md) for the full policy.
