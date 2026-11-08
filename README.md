@@ -26,19 +26,34 @@ This fork keeps the original workflow and adds German storefront support, config
 
 ## Install
 
+### Firefox
+
 The built XPI is unsigned.
 
 - **Temporary (development):** open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select `manifest.json` or the built XPI.
 - **Permanent:** publish/sign the add-on through [addons.mozilla.org](https://addons.mozilla.org/) or use a Firefox build with signature enforcement disabled.
 
-## Build for Firefox
+### Chrome
+
+- **Development:** run `./build-chrome.sh`, open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select `./kicad_parts_clipper_ngx_chrome_unpacked`.
+- **Publishing:** upload `./kicad_parts_clipper_ngx_chrome_v<version>.zip` to the [Chrome Web Store](https://chrome.google.com/webstore/devconsole).
+
+## Build
+
+### Firefox
 
 ```sh
 ./build-firefox.sh
 ```
 
-This writes `./kicad_parts_clipper_ngx_<version>.xpi`.
-
+This writes `./kicad_parts_clipper_ngx_v<version>.xpi` (for example, `kicad_parts_clipper_ngx_v2_0_0.xpi`).
 The version is read from `manifest.json`.
 
+### Chrome
+
+```sh
+./build-chrome.sh
+```
+
+This writes `./kicad_parts_clipper_ngx_chrome_v<version>.zip` and an unpacked copy at `./kicad_parts_clipper_ngx_chrome_unpacked/`. The Chrome build removes Firefox-only manifest keys such as `browser_specific_settings`.
 The version is read from `manifest.json`.
