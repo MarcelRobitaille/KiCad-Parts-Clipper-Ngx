@@ -37,8 +37,17 @@ The extension does not collect or transmit personal data, and its settings stay 
 2. Copy the data using either:
    - the **Copy to KiCad** button on the page, or
    - the toolbar icon, then **COPY TO KICAD**.
-3. In KiCad, open the symbol properties/fields and paste the clipboard.
+3. In KiCad, open the symbol properties/fields and paste the clipboard. See [Pasting into KiCad](#pasting-into-kicad) for the exact row and column to start from.
 4. To choose which fields are copied or rename their attributes, open the extension settings (gear icon in the popup or the add-on's Options page).
+
+### Pasting into KiCad
+
+KiCad pastes a tab-separated block starting at the selected cell; it does not match rows by field name. To keep the data aligned:
+
+- Click **once** in the **Name** cell of the **Value** row (the second row). The Reference row is omitted by default so an existing reference designator is not overwritten. If you enable the **Reference** field in the extension settings, start on the Reference row instead.
+- Do not drag-select cells or rows. With more than one row or cell selected, KiCad repeats the clipboard to fill the selection, which scrambles the result.
+- Keep all eight field columns visible: `Name`, `Value`, `Show`, `Show Name`, `H Align`, `V Align`, `Italic`, `Bold`. KiCad skips hidden columns when pasting, which shifts every value into the wrong column.
+- If a symbol already has custom fields in a different order, paste into a row that lines up with the first field the extension copied, or paste the block into a new/blank symbol first.
 
 ## Install
 

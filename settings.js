@@ -126,6 +126,14 @@
     return value || fallback;
   }
 
+  // KiCad splits the pasted block on tabs and newlines, so those characters
+  // must not appear inside a field value or the remaining rows shift.
+  function sanitizeValue(value) {
+    return String(value == null ? "" : value)
+      .replace(/[\t\r\n]+/g, " ")
+      .trim();
+  }
+
   function defaultSettings() {
     var fields = {};
     for (var i = 0; i < FIELDS.length; i++) {
@@ -192,7 +200,7 @@
       if (!config.enabled) continue;
 
       var name = sanitizeName(config.name, field.defaultName);
-      var value = field.dataKey ? data[field.dataKey] || "" : "";
+      var value = field.dataKey ? sanitizeValue(data[field.dataKey]) : "";
       rows.push(
         name + "\t" + value + "\t" + (field.visible ? "1" : "0") +
         "\t0\t" + (field.visible ? "Left" : "Center") + "\tCenter\t0\t0"
@@ -211,6 +219,7 @@
     saveSettings: saveSettings,
     buildTSV: buildTSV,
     sanitizeName: sanitizeName,
+    sanitizeValue: sanitizeValue,
   };
 })(
   typeof globalThis !== "undefined"
