@@ -5,6 +5,22 @@ All notable changes to this project are documented in this file.
 This project is a fork of **KiCad Parts Clipper** and starts from the upstream
 1.0.1 source.
 
+## [2.0.1] - 2026-11-10
+
+### Fixed
+
+- Removed the unused `activeTab` and `scripting` permissions. The product-data
+  extractor is a declared content script and already has host access, so it
+  never used the `scripting` API. This addresses a Chrome Web Store rejection
+  for requesting an unused permission.
+- Strip tabs, carriage returns, and newlines from copied field values so a
+  multi-line product description cannot shift the remaining KiCad TSV rows.
+
+### Changed
+
+- Documented the row and column to start from when pasting into KiCad's symbol
+  fields.
+
 ## [2.0.0] - 2026-11-08
 
 First public release of the fork, combining all fork changes into a single

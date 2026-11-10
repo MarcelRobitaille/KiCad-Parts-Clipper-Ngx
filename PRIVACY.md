@@ -32,11 +32,13 @@ Field preferences (which rows are enabled and what names they use) are saved wit
 
 | Permission | Purpose |
 | --- | --- |
-| Host permissions for the sites above | Read product data on supported distributor pages. |
-| `activeTab` | Identify the active tab when the popup opens. |
-| `scripting` | Run the product-data extractor on supported pages. |
+| Host permissions for the sites above | Run the product-data extractor and read product data on supported distributor pages. |
 | `clipboardWrite` | Write the generated KiCad text when you click **Copy to KiCad**. |
 | `storage` | Remember your field settings locally. |
+
+The product-data extractor is declared as a content script and runs only on the
+hosts listed above. The extension does not request the `scripting` or
+`activeTab` permissions.
 
 ## Third-party requests
 
